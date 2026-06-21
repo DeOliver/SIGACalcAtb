@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Calculadora SIGA</title>
+
+<style>
+body{
+    background:#141414;
+    color:#f0f0f0;
+    font-family:Arial;
+    padding:20px;
+}
+
+h1{
+    color:#d4af37;
+}
+
+select, input{
+    padding:5px;
+    margin:4px;
+}
+
+.container{
+    background:#1f1f1f;
+    padding:15px;
+    border-radius:10px;
+    margin-top:15px;
+}
+
+.linha{
+    margin-bottom:8px;
+}
+
+.final{
+    font-weight:bold;
+    color:#d4af37;
+}
+
+.alerta{
+    color:#ff4c4c;
+}
+
+.ok{
+    color:#4cff88;
+}
+
+.layout{
+    display:flex;
+    gap:30px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+}
+
+.calculadora{
+    flex:1;
+    min-width:320px;
+}
+
+.painelImagem{
+    width:300px;
+    background:#1f1f1f;
+    border-radius:12px;
+    padding:15px;
+    text-align:center;
+    border:2px solid #333;
+}
+
+.painelImagem img{
+    width:100%;
+    border-radius:10px;
+    border:2px solid #444;
+}
+
+.nomeLinhagem{
+    margin-top:10px;
+    color:#d4af37;
+    font-size:20px;
+    font-weight:bold;
+}
+
+</style>
+</head>
+<body>
+<div class="layout">
+
+<div class="calculadora">
+<h1>Calculadora de Atributos - SIGA</h1>
+
+<label>Pontos Disponíveis (5-20):</label>
+<input type="number"
+       id="pontosDisponiveis"
+       value="20"
+       min="5"
+       max="20"
+       onchange="calcular()">
+
+<br><br>
+
+<label>Linhagem:</label>
+<select id="linhagem"></select>
+
+<div class="container">
+<h3>Atributos</h3>
+<div id="atributos"></div>
+</div>
+
+<div class="container"
+     id="opcoesEspeciais"
+     style="display:none;">
+</div>
+
+<h3 id="status"></h3>
+</div>
+
+<div class="painelImagem">
+
+    <img id="imagemLinhagem"
+         src="imagens/Aslan.png"
+         alt="Linhagem">
+
+    <div class="nomeLinhagem"
+         id="nomeLinhagem">
+         Aslan
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+// =========================
+// ATRIBUTOS
+// =========================
+
+const atributos = [
+    "forca",
+    "agilidade",
+    "resistencia",
+    "intelecto",
+    "vontade",
+    "presenca"
+];
+
+const nomesBonitos = {
+    forca:"Força",
+    agilidade:"Agilidade",
+    resistencia:"Resistência",
+    intelecto:"Intelecto",
+    vontade:"Vontade",
+    presenca:"Presença"
+};
+
+// =========================
+// CUSTO
+// =========================
+
+const custoTabela = {
+    0:0,
+    1:1,
+    2:3,
+    3:6,
+    4:10,
+    5:15,
+    6:21
+};
+
+// =========================
+// LINHAGENS
+// =========================
+
+const linhagens = {
+
+"Aslan": {fixo:{forca:2, vontade:-1}},
+"NanDhur": {fixo:{resistencia:2, agilidade:-1}},
+"Yullen": {fixo:{resistencia:1, forca:1, vontade:-1}},
+"NanZhur": {fixo:{resistencia:2, vontade:-1}},
+"Anserin": {fixo:{agilidade:1, vontade:1, forca:-1}},
+"Anubyr": {fixo:{agilidade:2, intelecto:-1}},
+"Auroke": {fixo:{resistencia:2, intelecto:-1}},
+"Avarin": {fixo:{agilidade:2, resistencia:-1}},
+"Drakar": {fixo:{forca:1, agilidade:1, vontade:-1}},
+"Argan": {fixo:{intelecto:2, forca:-1}},
+"Thar": {fixo:{presenca:2, forca:-1}},
+"Elfen": {fixo:{intelecto:1, forca:-1}},
+"Leafen": {fixo:{intelecto:1, vontade:1, forca:-1}},
+"Fada": {fixo:{agilidade:1, vontade:1, forca:-1}},
+"Gajarin": {fixo:{forca:2, agilidade:-1}},
+"Hellrog": {fixo:{forca:1, resistencia:1, vontade:-1}},
+"Ikan": {fixo:{agilidade:1, resistencia:1, presenca:-1}},
+"Leporideo": {fixo:{agilidade:2, intelecto:-1}},
+"Mamba": {fixo:{forca:2, vontade:-1}},
+"Mirath": {fixo:{agilidade:1, intelecto:1}},
+"Sylvano": {fixo:{agilidade:2, intelecto:-1}},
+"Tarog": {fixo:{forca:2, vontade:-1}},
+"Temah": {fixo:{intelecto:1, vontade:1, forca:-1}},
+"Tuanak": {fixo:{agilidade:2, forca:-1}},
+"Uriel": {fixo:{vontade:2, resistencia:-1}},
+"Urvolg": {fixo:{forca:2, resistencia:1, intelecto:-1}},
+"Vaporurgico_Grande": {fixo:{forca:1, resistencia:1, agilidade:-1}},
+"Vaporurgico_Pequeno": {fixo:{agilidade:1, resistencia:1, forca:-1}},
+"Vok": {fixo:{agilidade:1, intelecto:1, vontade:-1}},
+
+// NOVAS LINHAGENS
+"Dhampyren": {fixo:{presenca:1, resistencia:1, vontade:-1}},
+"Lycaryn": {fixo:{forca:1, presenca:1, intelecto:-1}},
+
+// ESPECIAIS
+"Humano": {especial:"humano"},
+"Retornado": {especial:"retornado"}
+
+};
+
+// =========================
+// SELECT DE LINHAGENS
+// =========================
+
+const select = document.getElementById("linhagem");
+
+for(let l in linhagens){
+    let option = document.createElement("option");
+    option.value = l;
+    option.text = l;
+    select.appendChild(option);
+}
+
+// =========================
+// CRIAR INPUTS
+// =========================
+
+function criarInputs(){
+
+    const div = document.getElementById("atributos");
+
+    atributos.forEach(attr=>{
+
+        div.innerHTML += `
+        <div class="linha">
+
+        ${nomesBonitos[attr]}:
+
+        Base
+        <input type="number"
+               min="0"
+               max="6"
+               value="0"
+               id="${attr}"
+               onchange="calcular()">
+
+        Mod
+        <span id="mod_${attr}">0</span>
+
+        Final
+        <span class="final"
+              id="final_${attr}">0</span>
+
+        </div>
+        `;
+    });
+}
+
+// =========================
+// SELECTS ESPECIAIS
+// =========================
+
+function criarSelect(id){
+
+    let html = `<select id="${id}" onchange="calcular()">`;
+
+    atributos.forEach(attr=>{
+        html += `
+        <option value="${attr}">
+            ${nomesBonitos[attr]}
+        </option>
+        `;
+    });
+
+    html += "</select>";
+
+    return html;
+}
+
+// =========================
+// OPÇÕES ESPECIAIS
+// =========================
+
+function atualizarOpcoesEspeciais(){
+
+    const div = document.getElementById("opcoesEspeciais");
+
+    const linhagem = linhagens[select.value];
+
+    div.innerHTML = "";
+    div.style.display = "none";
+
+    if(!linhagem.especial) return;
+
+    div.style.display = "block";
+
+    if(linhagem.especial === "humano"){
+
+        div.innerHTML =
+        "Escolha +1 em dois atributos:<br>" +
+        criarSelect("humano1") + " " +
+        criarSelect("humano2");
+    }
+
+    if(linhagem.especial === "retornado"){
+
+        div.innerHTML =
+        "Escolha +1 em dois atributos e -1 em um:<br>" +
+        "+1: " +
+        criarSelect("ret1") + " " +
+        criarSelect("ret2") +
+
+        "<br>-1: " +
+        criarSelect("ret_neg");
+    }
+
+}
+
+// =========================
+// CÁLCULO
+// =========================
+
+function atualizarImagem(){
+
+    const nome = select.value;
+
+    document.getElementById("imagemLinhagem").src =
+        "imagens/" + nome + ".png";
+
+    document.getElementById("nomeLinhagem").innerText =
+        nome;
+}
+
+function calcular(){
+
+    let totalCusto = 0;
+
+    let pontosMax =
+        parseInt(
+            document.getElementById("pontosDisponiveis").value
+        );
+
+    let linhagem = linhagens[select.value];
+
+    atributos.forEach(attr=>{
+
+        let base =
+            parseInt(
+                document.getElementById(attr)?.value
+            ) || 0;
+
+        let mod = 0;
+
+        // FIXOS
+        if(linhagem.fixo){
+            mod += linhagem.fixo[attr] || 0;
+        }
+
+        // ESPECIAIS
+        if(linhagem.especial){
+
+            if(linhagem.especial === "humano"){
+
+                if(
+                    document.getElementById("humano1")?.value === attr
+                ){
+                    mod +=1;
+                }
+
+                if(
+                    document.getElementById("humano2")?.value === attr
+                ){
+                    mod +=1;
+                }
+            }
+
+            if(linhagem.especial === "retornado"){
+
+                if(
+                    document.getElementById("ret1")?.value === attr
+                ){
+                    mod +=1;
+                }
+
+                if(
+                    document.getElementById("ret2")?.value === attr
+                ){
+                    mod +=1;
+                }
+
+                if(
+                    document.getElementById("ret_neg")?.value === attr
+                ){
+                    mod -=1;
+                }
+            }
+
+        }
+
+        // MOSTRAR MOD
+        document.getElementById("mod_"+attr).innerText =
+            mod >= 0 ? "+"+mod : mod;
+
+        // RESULTADO FINAL
+        let final = base + mod;
+
+        document.getElementById("final_"+attr).innerText =
+            final;
+
+        // CUSTO SOMENTE DA BASE
+        totalCusto += custoTabela[base];
+    });
+
+    // STATUS FINAL
+    let status = document.getElementById("status");
+
+    if(totalCusto > pontosMax){
+
+        status.className = "alerta";
+
+        status.innerText =
+            "Pontos gastos: " +
+            totalCusto +
+            " / " +
+            pontosMax +
+            " (Ultrapassou!)";
+
+    }else{
+
+        status.className = "ok";
+
+        status.innerText =
+            "Pontos gastos: " +
+            totalCusto +
+            " / " +
+            pontosMax;
+    }
+}
+
+// =========================
+// EVENTOS
+// =========================
+
+select.addEventListener("change", ()=>{
+
+    atualizarOpcoesEspeciais();
+    atualizarImagem();
+    calcular();
+
+});
+
+// =========================
+// INICIAR
+// =========================
+
+criarInputs();
+atualizarOpcoesEspeciais();
+atualizarImagem();
+calcular();
+
+</script>
+
+</body>
+</html>
