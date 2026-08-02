@@ -196,7 +196,6 @@ const linhagens = {
 "Tarog": {fixo:{forca:2, intelecto:-1}},
 "Temah": {fixo:{intelecto:1, vontade:1, forca:-1}},
 "Tuanak": {fixo:{agilidade:2, forca:-1}},
-"Uriel": {fixo:{vontade:2, resistencia:-1}},
 "Urvolg": {fixo:{forca:2, resistencia:1, intelecto:-1}},
 "Vaporurgico_Grande": {fixo:{forca:1, resistencia:1, agilidade:-1}},
 "Vaporurgico_Pequeno": {fixo:{agilidade:1, resistencia:1, forca:-1}},
@@ -208,7 +207,8 @@ const linhagens = {
 
 // ESPECIAIS
 "Humano": {especial:"humano"},
-"Retornado": {especial:"retornado"}
+"Retornado": {especial:"retornado"},
+"Uriel": {especial:"uriel"},    
 
 };
 
@@ -318,6 +318,18 @@ function atualizarOpcoesEspeciais(){
         criarSelect("ret_neg");
     }
 
+    if(linhagem.especial === "uriel"){
+
+        div.innerHTML =
+        "Escolha +1 em dois atributos e -1 em um:<br>" +
+        "+1: " +
+        criarSelect("uri1") + " " +
+        criarSelect("uri2") +
+
+        "<br>-1: " +
+        criarSelect("uri_neg");
+    }
+
 }
 
 // =========================
@@ -394,6 +406,29 @@ function calcular(){
 
                 if(
                     document.getElementById("ret_neg")?.value === attr
+                ){
+                    mod -=1;
+                }
+            }
+
+             }
+
+            if(linhagem.especial === "uriel"){
+
+                if(
+                    document.getElementById("uri1")?.value === attr
+                ){
+                    mod +=1;
+                }
+
+                if(
+                    document.getElementById("uri22")?.value === attr
+                ){
+                    mod +=1;
+                }
+
+                if(
+                    document.getElementById("uri_neg")?.value === attr
                 ){
                     mod -=1;
                 }
